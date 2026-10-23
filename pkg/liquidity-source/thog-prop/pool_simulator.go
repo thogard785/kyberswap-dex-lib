@@ -72,7 +72,7 @@ func (s *PoolSimulator) CalcAmountOut(params pool.CalcAmountOutParams) (*pool.Ca
 	if m.err != nil {
 		return nil, m.err
 	}
-	return &pool.CalcAmountOutResult{TokenAmountOut: &pool.TokenAmount{Token: params.TokenOut, Amount: q.AmountOut.ToBig()}, Fee: &pool.TokenAmount{Token: params.TokenOut, Amount: new(big.Int)}, Gas: defaultGas, SwapInfo: swap}, nil
+	return &pool.CalcAmountOutResult{TokenAmountOut: &pool.TokenAmount{Token: params.TokenOut, Amount: q.AmountOut.ToBig()}, Fee: &pool.TokenAmount{Token: params.TokenOut, Amount: new(big.Int)}, Gas: s.estimateGas(i, o), SwapInfo: swap}, nil
 }
 func (s *PoolSimulator) UpdateBalance(params pool.UpdateBalanceParams) {
 	swap, ok := params.SwapInfo.(SwapInfo)
@@ -93,4 +93,11 @@ func (s *PoolSimulator) CloneState() pool.IPoolSimulator {
 }
 func (s *PoolSimulator) GetMetaInfo(_, _ string) any {
 	return pool.MetaInfo{ApprovalAddress: s.Info.Address, BlockNumber: s.Info.BlockNumber}
+}
+
+func (s *PoolSimulator) estimateGas(input, output int) int64 {
+	if s.state.Tokens[input].Category == s.state.Tokens[output].Category {
+		return sameCategoryGas
+	}
+	return crossCategoryGas
 }

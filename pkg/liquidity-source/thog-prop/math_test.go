@@ -239,3 +239,35 @@ func TestDeployedBoundaryParity(t *testing.T) {
 	require.Equal(t, 5544, tested)
 	require.Greater(t, success, 2000)
 }
+
+func TestGasEstimatesCoverDeployedColdCallsByCategory(t *testing.T) {
+	data, err := os.ReadFile("testdata/gas-v7.json.gz")
+	require.NoError(t, err)
+	z, err := gzip.NewReader(bytes.NewReader(data))
+	require.NoError(t, err)
+	defer func() { require.NoError(t, z.Close()) }()
+	data, err = io.ReadAll(z)
+	require.NoError(t, err)
+	var gas struct {
+		Rows []struct {
+			Method      string `json:"method"`
+			InputIndex  int    `json:"inputIndex"`
+			OutputIndex int    `json:"outputIndex"`
+			Success     bool   `json:"success"`
+			Gas         int64  `json:"gas"`
+		} `json:"rows"`
+	}
+	require.NoError(t, json.Unmarshal(data, &gas))
+	f := fixture(t, "deployed-v7.json.gz")
+	sim, err := NewPoolSimulator(entityFrom(t, stateFrom(t, f.Snapshots[0].Snapshot)))
+	require.NoError(t, err)
+	checked := 0
+	for _, row := range gas.Rows {
+		if row.Method != "makerSwapExactInput" || !row.Success {
+			continue
+		}
+		require.GreaterOrEqual(t, sim.estimateGas(row.InputIndex, row.OutputIndex), row.Gas)
+		checked++
+	}
+	require.Equal(t, 136, checked)
+}

@@ -42,10 +42,13 @@ and minimum-output protection.
 `CalcAmountOut` returns a `SwapInfo` containing the exact next balances.
 `UpdateBalance` applies those values without recomputing; subsequent quotes
 rebuild risk and wrapper inventory from the updated complete portfolio.
-Clones copy writable balance state, and quote calls do not mutate it. The
-660,000 gas estimate covers the observed cold direct-swap range for the current
-eight-token registry (maximum measured 653,899); future registry or token-code
-changes should be remeasured.
+Clones copy writable balance state, and quote calls do not mutate it. Gas estimates
+are 350,000 within a risk category and 550,000 across categories. The deployed
+cold-call measurements span 222,072–323,820 and 343,043–521,306 respectively,
+across all directed pairs and $1/$100/$5,000 sizes at block 115786825. These use
+Foundry 1.8.6 with current Monad page-storage pricing; the earlier 660,000
+estimate used an older simulator. Estimate the complete router transaction
+before submission and remeasure after catalog, policy or token-code changes.
 
 ## Verification
 

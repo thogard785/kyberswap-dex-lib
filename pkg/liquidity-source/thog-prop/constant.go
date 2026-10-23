@@ -11,8 +11,10 @@ const (
 	methodGetPoolData = "getPoolData"
 	maxTokens         = 32
 	wmon              = "0x3bd359c1119da7da1d913d1c4d2b7c461115433a"
-	// Measured against the deployed proxy on a Monad fork; includes ERC-20 transfers.
-	defaultGas = 660000
+	// Measured using Foundry 1.8.6 with Monad page-storage pricing and cold calls.
+	// Same-category swaps skip the covariance-risk work; see testdata/gas-v7.json.gz.
+	sameCategoryGas  = 350000
+	crossCategoryGas = 550000
 )
 
 var (
