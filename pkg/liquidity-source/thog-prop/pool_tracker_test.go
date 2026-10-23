@@ -72,3 +72,16 @@ func TestSnapshotRejectsIncompleteOrIncompatibleImages(t *testing.T) {
 		require.Error(t, err)
 	}
 }
+
+func TestTrackerSchedulesUpdatesWithoutMakerEvents(t *testing.T) {
+	tracker := &PoolTracker{}
+	require.Equal(t, int64(1001), tracker.NextUpdateAt(entity.Pool{Timestamp: 1000}))
+	require.Equal(t, int64(1), tracker.NextUpdateAt(entity.Pool{}))
+	f := fixture(t, "deployed-v7.json.gz")
+	s := stateFrom(t, f.Snapshots[0].Snapshot)
+	posted := s.small(2, 36, 32)
+	maxAge := s.small(2, 138, 8)
+	s.BlockNumber = posted + maxAge + 1
+	_, err := s.QuoteExactInput(0, 1, u(1000000))
+	require.ErrorIs(t, err, ErrUnavailable)
+}

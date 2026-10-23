@@ -65,3 +65,11 @@ func (t *PoolTracker) GetNewPoolState(ctx context.Context, p entity.Pool, _ pool
 	p.Timestamp = time.Now().Unix()
 	return p, nil
 }
+
+// Refresh even when no publication or transfer event arrives. Price age advances
+// with the snapshot block and must not freeze when the maker stops posting.
+// The pool-service schedule is in whole Unix seconds; head-driven refreshes can
+// run sooner. Tracker failures remain explicit errors for the caller to handle.
+func (t *PoolTracker) NextUpdateAt(p entity.Pool) int64 { return p.Timestamp + 1 }
+
+var _ pool.IPoolTrackerWithSchedule = (*PoolTracker)(nil)

@@ -15,6 +15,13 @@ and dynamic token/category metadata. A refresh can replace or reorder the
 registry. Schema 7 / wire 7 / model 1 is required; legacy `makerSnapshot` state
 cannot price the deployed model.
 
+The tracker requests another refresh after one second even without pool events;
+refresh on each new head when possible. `entity.Pool.Timestamp` records receipt
+time and `BlockNumber` identifies the actual quoted state. Tracker errors must
+remain visible to the pool service; an old serialized state remains a historical
+quote, not evidence of a live feed. The simulator uses the contract's exact
+block-age rule and does not convert elapsed wall time into invented blocks.
+
 Prices use 56-bit mantissas. The curve charges separate bid/ask/category/pair
 widths, positive covariance-inventory risk, an independent quadratic input
 volume charge and integrated wrapper costs. Sliding output refunds participate
